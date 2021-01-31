@@ -2,29 +2,35 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dev.dotworld.contentprovider">
 
-    <uses-permission android:name="android.permission.READ_USER_DICTIONARY" />
-    <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY" />
+<!--    <uses-permission android:name="android.permission.READ_USER_DICTIONARY" />-->
+<!--    <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY" /> &lt;!&ndash; this permission who one  app use to READ DATA &ndash;&gt;-->
+<!--    <permission android:name="dev.dotworld.contentprovider.ContentProviderRepo.READ_DATABASE" />-->
 
     <application
+        android:name=".EmployeeApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ContentProvider">
-        <activity android:name=".MainActivity">
+
+
+<!--        <provider-->
+<!--            android:name=".ContentProviderRepo"-->
+<!--            android:authorities="dev.dotworld.contentprovider.ContentProviderRepo"-->
+<!--            android:exported="true"-->
+<!--            android:permission="dev.dotworld.contentprovider.ContentProviderRepo.READ_DATABASE" />-->
+
+        <activity android:name=".MainActivity"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <provider
-            android:name=".ContentProviderRepo"
-            android:exported="true"
-            android:readPermission="dev.dotworld.contentprovider.ContentProviderRepo.READ_DATABASE"
-            android:writePermission="dev.dotworld.contentprovider.ContentProviderRepo.WRITE_DATABASE"
-            android:authorities="dev.dotworld.contentprovider.ContentProviderRepo" />
+        <activity android:name=".RoomActivtiy" />
     </application>
 
 </manifest>

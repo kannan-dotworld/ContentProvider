@@ -1,21 +1,31 @@
 package dev.dotworld.contentprovider
 
-import android.content.ContentValues
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
+import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import dev.dotworld.contentprovider.dao.EmployeeRepo
+import dev.dotworld.contentprovider.database.EmployeeDatabase
+import dev.dotworld.contentprovider.entity.EmployeeEntity
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
-    private var uri: Uri?=null
+    private lateinit var employeeViewModel: EmployeeViewModel
+    private var uri: Uri? = null
+    private var database: EmployeeDatabase? = null
     private lateinit var name: EditText
     private lateinit var saley: EditText
     private lateinit var save: Button
     private lateinit var get: Button
     private var TAG = MainActivity::class.java.simpleName
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -23,23 +33,31 @@ class MainActivity : AppCompatActivity() {
         saley = findViewById(R.id.salary)
         get = findViewById(R.id.getData)
         save = findViewById(R.id.save)
+        val recyclerView = findViewById<RecyclerView>(R.id.mainRecycler)
+        val adapter = EmployeeAdapter()
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        val dao = EmployeeDatabase.getInstance(application).EmployeeDao()
+        val repository = EmployeeRepo(dao)
+        val factory = EmployeeViewModel.EmployeeViewModelFactory(repository)
+        employeeViewModel = ViewModelProvider(this, factory).get(EmployeeViewModel::class.java)
+
+        employeeViewModel.getAllEmployeeLiveData.observe(owner = this) { data ->
+            data.let { adapter.submitList(it) }
+        }
+
         save.setOnClickListener {
-            var values = ContentValues()
-            values.put(ContentProviderRepo.NAME, name.text.toString())
-            values.put(ContentProviderRepo.SALARY, saley.text.toString())
-            uri = contentResolver.insert(ContentProviderRepo.CONTENT_URI, values)
-            Log.d(TAG, "onCreate: ${uri.toString()}")
-            Toast.makeText(this, uri.toString(), Toast.LENGTH_SHORT).show()
+            val employeeEntity = EmployeeEntity(0, name.text.toString(), saley.text.toString())
+            Log.d(TAG, "onCreate: ${employeeEntity._id}")
+            Log.d(TAG, "onCreate: ${employeeEntity.name}")
+            Log.d(TAG, "onCreate: ${employeeEntity.salary}")
+            employeeViewModel.viewModelScope.launch {
+                employeeViewModel.addEmp(employeeEntity)            }
         }
         get.setOnClickListener {
-            val PROVIDER_NAME = "content://dev.dotworld.contentprovider.ContentProviderRepo"
-            var c=managedQuery(Uri.parse(PROVIDER_NAME),null,null,null,"name")
-            if (c.moveToFirst()){
-                do {
-                    Log.d(TAG, "columnNames size : ${c.columnNames.size} || column count =${c.columnCount} || position =${c.position}")
-                        Log.d(TAG, "onCreate If : name= "+ c.getString(c.getColumnIndex( ContentProviderRepo.NAME))  +" || column id ="+ c.getString (c.getColumnIndex( ContentProviderRepo._ID))+" ||salary ="+ c.getString(c.getColumnIndex(ContentProviderRepo.SALARY)))
-
-                }while (c.moveToNext())
+            Log.d(TAG, "getAllEmployee from employee: ")
+            employeeViewModel.getAllEmployeeLiveData.observe(owner = this) { data ->
+                data.let { adapter.submitList(it) }
             }
         }
 
